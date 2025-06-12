@@ -1,0 +1,1795 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>수면연구소 SOMNIA</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;500;700&display=swap');
+    * { box-sizing: border-box; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      font-family: 'SUIT', sans-serif;
+      color: #fff;
+      overflow: hidden;
+      background: linear-gradient(to bottom, #a1c4fd, #c2e9fb);
+      transition: background 1.5s ease;
+    }
+    
+    .btn {
+      display: block;
+      width: 80%;
+      margin: 1em auto;
+      padding: 1.2em;
+      font-size: 1.2em;
+      font-weight: 600;
+      color: #fff;
+      border: none;
+      border-radius: 40px;
+      background: linear-gradient(45deg, rgba(67, 126, 255, 0.8), rgba(179, 202, 255, 0.8));
+      backdrop-filter: blur(10px);
+      box-shadow: 0 6px 20px rgba(174, 226, 255, 0.3);
+      cursor: pointer;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .btn::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        120deg,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent
+      );
+      transition: 0.5s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 10px 25px rgba(174, 226, 255, 0.5);
+    }
+
+    .btn:hover::before {
+      left: 100%;
+    }
+
+    .btn:active {
+      transform: translateY(1px) scale(0.98);
+      box-shadow: 0 4px 15px rgba(174, 226, 255, 0.3);
+    }
+
+    .main-buttons {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 60vh;
+    }
+
+    .btn-large-round {
+      width: 350px;
+      height: 350px;
+      border-radius: 50%;
+      font-size: 22px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative; 
+      top: 240px; 
+    }
+
+    .btn-small-flat {
+      font-size: 14px;
+      padding: 16px 32px;
+      border-radius: 8px;
+      top: 640px; 
+      width: 200px;
+      height: 50px;
+    }
+
+    .btn img.btn-icon {
+      width: 350px;      
+      height: 350px;
+    }
+
+    .section {
+      width: 100vw;
+      height: 100vh;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+    .section.active {
+      display: flex;
+    }
+    .question-box {
+      width: 90%;
+      max-width: 450px;
+      background: rgba(0,0,0,0.6);
+      border-radius: 20px;
+      padding: 1.2em;
+      backdrop-filter: blur(8px);
+    }
+
+    .question-box h2 {
+      font-size: 1.3rem;
+      margin-bottom: 1.2rem;
+      color: #fff;
+    }
+
+    .choice-btn {
+      width: 100%;
+      padding: 0.9em;
+      margin: 0.6em 0;
+      background: linear-gradient(135deg, rgba(69, 105, 202, 0.8), rgba(137, 163, 247, 0.8));
+      border: none;
+      border-radius: 15px;
+      color: #fff;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .choice-btn:hover {
+      transform: translateY(-2px);
+      background: linear-gradient(135deg, rgba(89, 125, 222, 0.9), rgba(157, 183, 255, 0.9));
+      box-shadow: 0 8px 25px rgba(148, 172, 244, 0.3);
+    }
+
+    .choice-btn:active {
+      transform: translateY(1px);
+      box-shadow: 0 2px 10px rgba(148, 172, 244, 0.2);
+    }
+
+    .progress {
+      display: flex;
+      gap: 4px;
+      justify-content: center;
+      margin-bottom: 1em;
+    }
+    .dot {
+      width: 8px;
+      height: 8px;
+      background: #555;
+      border-radius: 50%;
+      margin: 0 2px;
+      transition: background-color 0.3s ease;
+    }
+    .dot.active {
+      background: #94a6f4;
+      box-shadow: 0 0 8px rgba(148, 166, 244, 0.5);
+    }
+
+    h1, h2 { text-align: center; margin: 0.5em 0; }
+    iframe { width: 100%; height: 200px; border: none; border-radius: 12px; }
+
+    .card {
+      background: rgba(255,255,255,0.15);
+      border-radius: 20px;
+      padding: 1.2em;
+      margin: 1em auto;
+      width: 90%;
+      max-width: 600px;
+    }
+
+    .card h3 {
+      margin-top: 0;
+      color: #94acf4;
+    }
+
+    .card ul {
+      padding-left: 1.2rem;
+    }
+
+    .card li {
+      margin-bottom: 0.5rem;
+      line-height: 1.6;
+    }
+
+    .tag {
+      display: inline-block;
+      background-color: rgba(255,255,255,0.2);
+      padding: 0.2rem 0.5rem;
+      margin-right: 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+    }
+
+    canvas { width: 100% !important; height: 300px !important; }
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.4);
+      backdrop-filter: blur(8px);
+      display: flex;
+      justify-content: space-around;
+      padding: 0.5em 0;
+      z-index: 999;
+      box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+         .nav-item {
+      background: none;
+     border: none;
+     color: #fff;
+     font-size: 1rem;
+     flex: 1;
+     text-align: center;
+     padding: 0.5em 0;
+     cursor: pointer;
+     transition: all 0.3s ease;
+     position: relative;
+     border-radius: 12px;
+    }
+    .nav-item:hover {
+      transform: translateY(-4px) scale(1.05);
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .nav-item:active {
+      transform: translateY(1px) scale(0.98);
+}
+
+    @keyframes fadeSlideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card-animated {
+  animation: fadeSlideUp 1s ease-out;
+}
+#intro {
+      height: 100vh;
+      overflow: hidden;
+    }
+.logo {
+  width: 1200px;
+  height: auto;
+  margin-top: 0;
+  animation: gentleFloat 3s ease-in-out infinite;
+  filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.4));
+  transition: transform 0.3s ease;
+}
+.logo:hover {
+  transform: scale(1.05);
+}
+
+@keyframes gentleFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+}
+ #intro button {
+  margin-bottom: 30px; 
+  position: absolute;
+  bottom: 50px; 
+}
+
+.move-up {
+  margin-top: -100px;
+}
+.glow-text {
+  text-shadow: 0 0 8px rgba(148, 169, 244, 0.7);
+  animation: pulseGlow 1.5s ease-in-out infinite alternate;
+}
+
+
+.nav-icon {
+  width: 80px;
+  height: 80px;
+}
+.btn img.btn-icon {
+  width: 350px;      
+  height: 350px;
+}
+
+.history-container {
+  max-width: 800px;
+  width: 90%;
+  padding: 2.5rem;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(12px);
+  margin: 60px auto;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2),
+              inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+  animation: fadeIn 0.8s ease-out;
+}
+
+.history-container::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at center,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0) 70%
+  );
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.history-container:hover::before {
+  opacity: 1;
+}
+
+.history-header {
+  font-size: 2rem;
+  margin-bottom: 2.5rem;
+  font-weight: 600;
+  text-align: center;
+  color: #ffffff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  position: relative;
+  padding-bottom: 1.2rem;
+  letter-spacing: 1px;
+}
+
+.history-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 3px;
+  background: linear-gradient(to right,
+    rgba(148, 172, 244, 0.2),
+    rgba(148, 172, 244, 0.8),
+    rgba(148, 172, 244, 0.2)
+  );
+  border-radius: 3px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+#historyChart {
+  width: 100% !important;
+  height: auto !important;
+  aspect-ratio: 16 / 9;
+  display: block;
+  margin: 1rem 0 2rem;
+  padding: 2rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+#historyChart:hover {
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.4);
+  transform: translateY(-2px);
+}
+
+.history-container .btn {
+  margin-top: 2rem;
+  background: linear-gradient(45deg, 
+    rgba(148, 172, 244, 0.8),
+    rgba(107, 119, 209, 0.8)
+  );
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: white;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.history-container .btn::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at center,
+    rgba(255, 255, 255, 0.2) 0%,
+    rgba(255, 255, 255, 0) 70%
+  );
+  transform: scale(0);
+  transition: transform 0.6s ease;
+}
+
+.history-container .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(148, 172, 244, 0.3);
+}
+
+.history-container .btn:hover::before {
+  transform: scale(1);
+}
+
+.no-data-message {
+  text-align: center;
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 3rem 0;
+  padding: 2rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.1);
+}
+
+.scroll-block {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: all 0.8s ease-out;
+  max-width: 600px;
+  width: 90%;
+  margin: 60px auto;
+  padding: 1.5rem;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  color: #fff;
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.scroll-block h3 {
+  margin-top: 0;
+  color: #aebfff;
+  font-size: 1.3rem;
+}
+
+.scroll-block ul {
+  padding-left: 1rem;
+}
+
+.scroll-block li {
+  margin-bottom: 0.7rem;
+}
+
+.scroll-block.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@keyframes openFlap {
+  to { transform: rotateX(180deg); }
+}
+
+@keyframes slideUpLetter {
+  0% { bottom: -100%; }
+  100% { bottom: 0; }
+}
+
+@keyframes pulseGlow {
+  0% {
+    text-shadow: 0 0 4px rgba(148, 166, 244, 0.5);
+  }
+  100% {
+    text-shadow: 0 0 12px rgb(148, 175, 244);
+  }
+}
+
+@keyframes tiltIn {
+  0% { transform: rotateX(15deg); opacity: 0.8; }
+  100% { transform: rotateX(0deg); opacity: 1; }
+}
+
+#stars-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+  z-index: 0;
+}
+.lab-report {
+  width: 90%;
+  max-width: 700px;
+  margin: 80px auto;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 60px;
+}
+
+.report-section {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px;
+  padding: 2rem;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 0 20px rgba(135, 189, 255, 0.15);
+  animation: fadeSlideUp 1s ease-out forwards;
+  opacity: 0;
+  transform: translateY(40px);
+  transition: all 0.8s ease;
+  color: #ffffff;
+  font-size: 1.1rem;
+  line-height: 1.7;
+}
+
+.report-section.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.btn-glow {
+  width: 200px;
+  margin: 0 auto;
+  padding: 1em 2em;
+  font-size: 1.1rem;
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  background: radial-gradient(circle at top left, #9aaaff, #6b77d1);
+  box-shadow: 0 0 15px rgba(135,189,255,0.6), 0 0 40px rgba(135,189,255,0.3) inset;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.btn-glow:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 25px rgba(135,189,255,0.8), 0 0 40px rgba(135,189,255,0.4) inset;
+}
+
+@keyframes slideInUp {
+  from { opacity: 0; transform: translateY(60px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 새로운 결과 페이지 스타일 */
+.result-container {
+  width: 100%;
+  min-height: 100vh;
+  padding: 0.5rem 2rem 2rem;
+  position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: radial-gradient(circle at top, #1a1f4c, #0a0419);
+  padding-bottom: 100px;
+  scroll-padding-top: 60px;
+}
+
+.result-header-container {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding: 0;
+  background: linear-gradient(to bottom, 
+    rgba(26, 31, 76, 0.05), 
+    rgba(26, 31, 76, 0.02)
+  );
+  backdrop-filter: blur(8px);
+  margin-bottom: 1rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  height: 100px;
+  gap: 0;
+}
+
+.result-header-container.scrolled {
+  padding: 0;
+  background: linear-gradient(to bottom, 
+    rgba(26, 31, 76, 0.3), 
+    rgba(26, 31, 76, 0.2)
+  );
+  backdrop-filter: blur(12px);
+  gap: 0;
+  height: 100px;
+}
+
+.result-logo {
+  width: 800px;
+  max-width: 90vw;
+  height: auto;
+  display: block;
+  margin: 0;
+  opacity: 0.95;
+  transform: translateY(0);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: drop-shadow(0 0 25px rgba(148, 172, 244, 0.6));
+  position: relative;
+  transform-origin: center;
+  object-fit: cover;
+}
+
+.result-logo.scrolled {
+  width: 800px;
+  height: auto;
+  margin: 0;
+  opacity: 1;
+  transform: scale(1);
+  filter: drop-shadow(0 0 35px rgba(148, 172, 244, 0.9)) brightness(1.1);
+  animation: glow 2s ease-in-out infinite alternate;
+  object-fit: cover;
+}
+
+@keyframes glow {
+  from {
+    filter: drop-shadow(0 0 25px rgba(148, 172, 244, 0.6)) brightness(1);
+  }
+  to {
+    filter: drop-shadow(0 0 40px rgba(148, 172, 244, 0.9)) brightness(1.15);
+  }
+}
+
+.result-title {
+  font-size: 1rem;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(45deg, #94acf4, #6b77d1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  opacity: 0.9;
+  transform: translateY(0);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  letter-spacing: 1px;
+  width: 100%;
+  transform-origin: center;
+  position: relative;
+}
+
+.result-title.scrolled {
+  opacity: 0;
+  visibility: hidden;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* 스크롤 시 컨테이너 높이 강제 조정 */
+.result-container {
+  scroll-padding-top: 60px; /* 스크롤 시 헤더 높이 */
+}
+
+.result-header-container.scrolled::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 60px; /* 스크롤 시 헤더 높이 */
+  pointer-events: none;
+}
+
+@media (max-width: 900px) {
+  .result-logo, .result-logo.scrolled {
+    width: 85vw;
+  }
+}
+
+.result-card {
+  position: relative;
+  width: 90%;
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 2.5rem;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  backdrop-filter: blur(12px);
+  transform-style: preserve-3d;
+  perspective: 2000px;
+  margin-bottom: 100px;
+  animation: fadeIn 0.8s ease-out;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15),
+              inset 0 1px 1px rgba(255, 255, 255, 0.05);
+}
+
+.result-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 24px;
+  background: linear-gradient(45deg, 
+    rgba(255, 255, 255, 0.1) 0%, 
+    rgba(255, 255, 255, 0.05) 50%, 
+    rgba(255, 255, 255, 0) 100%
+  );
+  pointer-events: none;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+    filter: blur(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+.insight-card {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 2rem;
+  transform: translateZ(10px);
+  transition: all 0.4s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1),
+              inset 0 1px 1px rgba(255, 255, 255, 0.05);
+}
+
+.insight-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at center,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0) 80%
+  );
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+  transform: translate3d(0, 0, 0);
+}
+
+.insight-card:hover::before {
+  opacity: 1;
+}
+
+.insight-card:hover {
+  transform: translateZ(12px) translateY(-2px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12),
+              inset 0 1px 2px rgba(255, 255, 255, 0.07);
+}
+
+.stat-circle {
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  margin: 0 auto;
+  position: relative;
+  background: conic-gradient(from 0deg, 
+    rgba(148, 172, 244, 0.9) var(--percent), 
+    rgba(255, 255, 255, 0.1) var(--percent)
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3.5rem;
+  font-weight: bold;
+  color: #fff;
+  box-shadow: 0 0 30px rgba(148, 172, 244, 0.2),
+              inset 0 0 15px rgba(148, 172, 244, 0.1);
+  transition: all 0.4s ease;
+}
+
+.stat-circle::after {
+  content: '';
+  position: absolute;
+  width: 85%;
+  height: 85%;
+  border-radius: 50%;
+  background: radial-gradient(circle at center,
+    rgba(0, 0, 0, 0.15) 0%,
+    rgba(0, 0, 0, 0.2) 100%
+  );
+  backdrop-filter: blur(4px);
+  z-index: 1;
+}
+
+.stat-circle span {
+  position: relative;
+  z-index: 2;
+  background: linear-gradient(45deg, #fff, #e0e6ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  50% {
+    transform: scale(1.02);
+    filter: brightness(1.1);
+  }
+}
+
+.score-container {
+  text-align: center;
+}
+
+.score-label {
+  font-size: 1.6rem;
+  color: #fff;
+  margin: 1.5rem 0;
+  font-weight: 500;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  background: linear-gradient(45deg, #fff, #94acf4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.sleep-time {
+  text-align: center;
+  margin-top: 2rem;
+  color: #94acf4;
+  font-size: 1.3rem;
+  font-weight: 500;
+  letter-spacing: 1px;
+  position: relative;
+}
+
+.sleep-time span {
+  display: block;
+  font-size: 2.2rem;
+  margin: 1rem 0;
+  color: #fff;
+  font-weight: 600;
+  text-shadow: 0 2px 10px rgba(148, 172, 244, 0.3);
+  position: relative;
+}
+
+.sleep-type-badge {
+  display: block;
+  width: fit-content;
+  margin: 0 auto 2rem;
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, 
+    rgba(148, 172, 244, 0.15) 0%,
+    rgba(148, 172, 244, 0.25) 100%
+  );
+  border: 1px solid rgba(148, 172, 244, 0.3);
+  border-radius: 30px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #fff;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(148, 172, 244, 0.1),
+              inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.sleep-type-badge::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at center,
+    rgba(255, 255, 255, 0.2) 0%,
+    rgba(255, 255, 255, 0) 70%
+  );
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.sleep-type-badge:hover::before {
+  opacity: 1;
+}
+
+#sleep-description {
+  text-align: center;
+  line-height: 1.8;
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 2rem 0;
+  padding: 0 1.5rem;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+  position: relative;
+}
+
+#sleep-description::before,
+#sleep-description::after {
+  content: '"';
+  position: absolute;
+  font-size: 3rem;
+  color: rgba(148, 172, 244, 0.3);
+  line-height: 1;
+}
+
+#sleep-description::before {
+  left: 0;
+  top: -1rem;
+}
+
+#sleep-description::after {
+  right: 0;
+  bottom: -2rem;
+}
+
+.recommendations {
+  margin-top: 3rem;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.recommendation-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.recommendation-item {
+  padding: 1.5rem 2rem;
+  margin: 1.2rem 0;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  position: relative;
+  transform: translateX(-20px);
+  opacity: 0;
+  animation: slideInRight 0.5s ease forwards;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.recommendation-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(to bottom, 
+    rgba(148, 172, 244, 0.9),
+    rgba(148, 172, 244, 0.6)
+  );
+  border-radius: 4px;
+}
+
+.recommendation-item::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 4px;
+  width: 12px;
+  height: 100%;
+  background: linear-gradient(to right,
+    rgba(148, 172, 244, 0.2),
+    transparent
+  );
+}
+
+.recommendation-item:hover {
+  transform: translateX(0) translateY(-1px);
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+}
+
+.recommendation-item:hover::before {
+  background: linear-gradient(to bottom, 
+    rgba(148, 172, 244, 1),
+    rgba(148, 172, 244, 0.8)
+  );
+}
+
+.recommendation-item:hover::after {
+  background: linear-gradient(to right,
+    rgba(148, 172, 244, 0.3),
+    transparent
+  );
+}
+
+@keyframes slideInRight {
+  0% {
+    transform: translateX(-30px);
+    opacity: 0;
+    filter: blur(5px);
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+.recommendation-item:nth-child(1) { animation-delay: 0.2s; }
+.recommendation-item:nth-child(2) { animation-delay: 0.4s; }
+.recommendation-item:nth-child(3) { animation-delay: 0.6s; }
+
+.result-header {
+  font-size: 2.5rem;
+  font-weight: bold;
+  background: linear-gradient(45deg, #94acf4, #6b77d1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 2rem;
+  transform: translateZ(30px);
+  transition: transform 0.3s ease;
+}
+
+.result-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.floating-particles {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+.particle {
+  position: absolute;
+  background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: float 20s infinite ease-in-out;
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateY(-15px) rotate(180deg);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(0) rotate(360deg);
+    opacity: 0.6;
+  }
+}
+
+.result-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 3rem;
+  padding: 0 1rem;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 2px solid #94acf4;
+  box-shadow: none;
+}
+
+.btn-outline:hover {
+  background: rgba(148, 172, 244, 0.1);
+  box-shadow: 0 0 15px rgba(148, 172, 244, 0.3);
+}
+
+.sleep-time {
+  animation: fadeIn 0.8s ease-out 0.6s both;
+}
+
+.recommendations h2 {
+  text-align: center;
+  font-size: 1.8rem;
+  color: #fff;
+  margin-bottom: 2rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  background: linear-gradient(45deg, #fff, #94acf4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  position: relative;
+  padding-bottom: 1rem;
+}
+
+.recommendations h2::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 2px;
+  background: linear-gradient(to right, transparent, #94acf4, transparent);
+}
+
+.history-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1.2rem;
+  margin-top: 2.5rem;
+  animation: slideUp 0.6s ease-out forwards;
+}
+
+.history-btn {
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #fff;
+  background: linear-gradient(45deg, 
+    rgba(148, 172, 244, 0.8),
+    rgba(107, 119, 209, 0.8)
+  );
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.history-btn::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at center,
+    rgba(255, 255, 255, 0.2) 0%,
+    rgba(255, 255, 255, 0) 70%
+  );
+  transform: scale(0);
+  transition: transform 0.6s ease;
+}
+
+.history-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(148, 172, 244, 0.3);
+}
+
+.history-btn:hover::before {
+  transform: scale(1);
+}
+
+.history-btn.danger {
+  background: linear-gradient(45deg, 
+    rgba(244, 148, 148, 0.8),
+    rgba(209, 107, 107, 0.8)
+  );
+}
+
+.history-btn.danger:hover {
+  box-shadow: 0 6px 20px rgba(244, 148, 148, 0.3);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media screen and (max-width: 430px) {
+  section {
+    transform: scale(0.85);
+    transform-origin: top center;
+  }
+
+  .logo {
+    transform: scale(0.85);
+  }
+}
+  </style>
+</head>
+<body>
+  <section id="intro" class="section active">
+    <img src="e.png" alt="SOMNIA 로고" class="logo move-up" />
+    <p>당신만을 위한 수면 처방</p>
+    <div class="main-buttons">
+      <button class="btn btn-large-round" onclick="navigate('quiz')"><img src="d.png" alt="아이콘" class="btn-icon" /></button>
+      <button class="btn btn-small-flat" onclick="navigate('history')">수면 히스토리</button>
+    </div>
+  </section>
+
+  <section id="quiz" class="section">
+    <div class="progress" id="progress"></div>
+    <div class="question-box">
+      <h2 id="question-text"></h2>
+      <ul id="options-list"></ul>
+    </div>
+  </section>
+
+  <section id="history" class="section">
+    <div class="history-container">
+      <div class="history-header"> 수면 점수 히스토리</div>
+      <canvas id="historyChart"></canvas>
+      <button class="btn" onclick="navigate('intro')">뒤로가기</button>
+    </div>
+  </section>
+
+  <section id="result" class="section">
+    <div class="result-container">
+      <div class="floating-particles" id="particles"></div>
+      
+      <div class="result-header-container">
+        <img src="e.png" alt="SOMNIA 로고" class="result-logo" id="result-logo" />
+        <h1 class="result-title" id="result-title">당신의 수면 분석 결과</h1>
+      </div>
+
+      <div class="result-card">
+        <div class="result-content">
+          <div class="insight-card">
+            <div class="score-container">
+              <div class="stat-circle">
+                <span id="sleep-score">0</span>
+              </div>
+              <div class="score-label">수면 점수</div>
+              <div class="sleep-time">
+                권장 수면 시간
+                <span id="recommended-sleep">7시간 30분</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="insight-card">
+            <span class="sleep-type-badge" id="sleep-type"></span>
+            <p id="sleep-description"></p>
+          </div>
+        </div>
+        
+        <div class="recommendations">
+          <h2>맞춤 수면 처방</h2>
+          <ul class="recommendation-list" id="recommendations"></ul>
+        </div>
+
+        <div class="result-actions">
+          <button class="btn-glow" onclick="saveAndReload()">다시하기</button>
+          <button class="btn-glow btn-outline" onclick="shareResult()">공유하기</button>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <nav class="bottom-nav">
+    <button onclick="navigate('intro')" class="nav-item" id="nav-intro">
+      <img src="a.png" alt="홈" class="nav-icon" />
+    </button>
+    <button onclick="navigate('quiz')" class="nav-item" id="nav-quiz">
+      <img src="b.png" alt="진단" class="nav-icon" />
+    </button>
+    <button onclick="navigate('history')" class="nav-item" id="nav-history">
+      <img src="c.png" alt="히스토리" class="nav-icon" />
+    </button>
+  </nav>
+
+  <script>
+    const questions = [
+      { q: '오늘 스트레스 수준은?', options: ['매우 낮음','낮음','높음','매우 높음'] },
+      { q: '카페인 섭취량은?', options: ['없음','1잔','2~3잔','3잔 이상'] },
+      { q: '평균 수면 시간은?', options: ['8시간 이상','6~8시간','4~6시간','4시간 이하'] },
+      { q: '운동 빈도는?', options: ['주 5회 이상','주 3~4회','주 1~2회','거의 하지 않음'] },
+      { q: '수면 환경은?', options: ['조용하고 어두움','적당','시끄럽고 밝음','매우 안좋음'] },
+      { q: '취침 전 스마트폰 사용 시간은?', options: ['없음','30분 이하','30분~1시간','1시간 이상'] },
+      { q: '낮 동안 졸림 빈도는?', options: ['전혀','가끔','자주','항상'] },
+      { q: '알코올 섭취는?', options: ['없음','가끔','주 2~3회','거의 매일'] },
+      { q: '멘탈 상태는?', options: ['아주 안정','안정','불안','매우 불안'] },
+      { q: '수면 루틴의 규칙성은?', options: ['매일 같음','대체로 비슷','가끔 다름','매우 불규칙'] },
+    ];
+
+    let current = 0, answers = [];
+    const qText = document.getElementById('question-text');
+    const opts = document.getElementById('options-list');
+    const progress = document.getElementById('progress');
+    const body = document.body;
+
+    const backgrounds = [
+      'linear-gradient(to bottom, #a1c4fd, #c2e9fb)',
+      'linear-gradient(to bottom, #fceabb, #f8b500)',
+      'linear-gradient(to bottom, #fbc2eb, #a6c1ee)',
+      'radial-gradient(circle at bottom, #1f1336, #0a0419)'
+    ];
+
+    function renderProgress() {
+      progress.innerHTML = questions.map((_, i) => `<div class="dot ${i === current ? 'active' : ''}"></div>`).join('');
+    }
+
+    function updateBackground() {
+  const ratio = current / (questions.length - 1);
+  const from = Math.floor(ratio * (backgrounds.length - 1));
+  const to = Math.min(from + 1, backgrounds.length - 1);
+  document.body.style.background = `linear-gradient(to bottom, ${getColor(from, to, ratio % 1)})`;
+    }
+
+
+    function loadQuestion() {
+      renderProgress();
+      updateBackground();
+      const q = questions[current];
+      qText.textContent = `${current + 1}. ${q.q}`;
+      opts.innerHTML = q.options.map((o, i) => `<li><button class="choice-btn" onclick="selectOption(${i + 1})">${o}</button></li>`).join('');
+    }
+
+    function selectOption(val) {
+      answers.push(val);
+      current++;
+      if (current < questions.length) loadQuestion();
+      else navigate('result');
+    }
+    function getColor(fromIdx, toIdx, t) {
+  const colors = [
+    ['#a1c4fd', '#c2e9fb'],
+    ['#fceabb', '#f8b500'],
+    ['#fbc2eb', '#a6c1ee'],
+    ['#1f1336', '#0a0419']
+  ];
+  const [fromStart, fromEnd] = colors[fromIdx];
+  const [toStart, toEnd] = colors[toIdx];
+  const mix = (c1, c2, t) => {
+    const hexToRgb = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+    const rgbToHex = ([r, g, b]) => `#${[r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('')}`;
+    const c1rgb = hexToRgb(c1), c2rgb = hexToRgb(c2);
+    const blended = c1rgb.map((v, i) => Math.round(v + (c2rgb[i] - v) * t));
+    return rgbToHex(blended);
+  };
+  return `${mix(fromStart, toStart, t)}, ${mix(fromEnd, toEnd, t)}`;
+}
+
+    function navigate(id) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      const target = document.getElementById(id);
+      if (target) target.classList.add('active');
+      
+      // 홈으로 돌아갈 때 배경색 초기화
+      if (id === 'intro') {
+        document.body.style.background = 'linear-gradient(to bottom, #a1c4fd, #c2e9fb)';
+      }
+      
+      if (id === 'quiz') {
+        current = 0;
+        answers = [];
+        loadQuestion();
+      }
+      if (id === 'result') {
+        if (typeof showResult === 'function') showResult();
+      }
+      if (id === 'history') {
+        if (typeof renderHistory === 'function') renderHistory();
+      }
+    }
+
+    function showResult() {
+      const sum = answers.reduce((a,b)=>a+b,0);
+      const maxScore = questions.length * 4;
+      const score = Math.round((maxScore - sum + questions.length) / maxScore * 100);
+      
+      // 수면 점수 애니메이션
+      const scoreElement = document.getElementById('sleep-score');
+      const duration = 2000;
+      const steps = 60;
+      const increment = score / steps;
+      let current = 0;
+      const timer = setInterval(() => {
+        current += increment;
+        if (current >= score) {
+          current = score;
+          clearInterval(timer);
+        }
+        scoreElement.textContent = Math.round(current);
+        scoreElement.parentElement.style.setProperty('--percent', `${current}%`);
+      }, duration / steps);
+
+      // 권장 수면 시간 설정
+      const recommendedSleepElement = document.getElementById('recommended-sleep');
+      let recommendedSleep = '';
+      if (score >= 80) {
+        recommendedSleep = '7시간 30분';
+      } else if (score >= 60) {
+        recommendedSleep = '8시간';
+      } else if (score >= 40) {
+        recommendedSleep = '8시간 30분';
+      } else {
+        recommendedSleep = '9시간';
+      }
+      recommendedSleepElement.textContent = recommendedSleep;
+
+      // 수면 유형 및 설명 설정
+      const typeElement = document.getElementById('sleep-type');
+      const descElement = document.getElementById('sleep-description');
+      const recommendList = document.getElementById('recommendations');
+
+      let type = '', description = '', recommendations = [];
+
+      if (score >= 80) {
+        type = '이상적인 수면가';
+        description = '당신은 최적의 수면 패턴을 가지고 있습니다. 현재의 수면 습관을 잘 유지해보세요.';
+        recommendations = [
+          '현재의 취침/기상 시간을 꾸준히 유지하세요',
+          '저녁 루틴을 더욱 체계화해보세요',
+          '주말에도 평일과 비슷한 수면 시간을 유지하세요'
+        ];
+      } else if (score >= 60) {
+        type = '안정적인 수면가';
+        description = '전반적으로 좋은 수면 습관을 가지고 있지만, 개선의 여지가 있습니다.';
+        recommendations = [
+          '취침 전 블루라이트 노출을 줄여보세요',
+          '저녁 운동은 취침 3시간 전에 마무리하세요',
+          '침실 온도를 18-22도로 유지해보세요'
+        ];
+      } else if (score >= 40) {
+        type = '불안정한 수면가';
+        description = '수면의 질이 다소 떨어지지만, 작은 변화로도 큰 개선이 가능합니다.';
+        recommendations = [
+          '일정한 취침 시간을 정해보세요',
+          '취침 전 따뜻한 샤워를 해보세요',
+          '저녁 식사는 취침 3시간 전에 끝내세요'
+        ];
+      } else {
+        type = '위험한 수면가';
+        description = '수면 패턴 개선이 필요합니다. 전문가와의 상담을 추천드립니다.';
+        recommendations = [
+          '수면 전문의와 상담을 고려해보세요',
+          '카페인 섭취를 점심 전으로 제한해보세요',
+          '취침 전 명상이나 호흡 운동을 시도해보세요'
+        ];
+      }
+
+      typeElement.textContent = type;
+      descElement.textContent = description;
+
+      // 추천 사항 표시
+      recommendList.innerHTML = '';
+      recommendations.forEach((rec, index) => {
+        const li = document.createElement('li');
+        li.className = 'recommendation-item';
+        li.style.animationDelay = `${index * 0.2}s`;
+        li.textContent = rec;
+        recommendList.appendChild(li);
+      });
+
+      // 스크롤 이벤트 처리
+      const resultContainer = document.querySelector('.result-container');
+      const headerContainer = document.querySelector('.result-header-container');
+      const logo = document.getElementById('result-logo');
+      const title = document.getElementById('result-title');
+
+      resultContainer.addEventListener('scroll', () => {
+        const scrolled = resultContainer.scrollTop > 30;
+        headerContainer.classList.toggle('scrolled', scrolled);
+        logo.classList.toggle('scrolled', scrolled);
+        title.classList.toggle('scrolled', scrolled);
+
+        // 스크롤 위치에 따른 부드러운 투명도 조정
+        const opacity = Math.min(resultContainer.scrollTop / 150, 0.3); // 최대 투명도를 0.3으로 제한
+        headerContainer.style.background = `linear-gradient(to bottom, 
+          rgba(26, 31, 76, ${0.05 + opacity}), 
+          rgba(26, 31, 76, ${0.02 + opacity})
+        )`;
+      });
+
+      // 파티클 효과 생성
+      createParticles();
+    }
+
+    // 파티클 효과 개선
+    function createParticles() {
+      const container = document.getElementById('particles');
+      container.innerHTML = '';
+      for (let i = 0; i < 50; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.width = Math.random() * 3 + 'px';
+        particle.style.height = particle.style.width;
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.top = Math.random() * 100 + '%';
+        particle.style.opacity = Math.random() * 0.5 + 0.2;
+        particle.style.animationDuration = (Math.random() * 20 + 10) + 's';
+        particle.style.animationDelay = -Math.random() * 20 + 's';
+        container.appendChild(particle);
+      }
+    }
+
+    // 3D 효과를 더 부드럽게 수정
+    document.addEventListener('DOMContentLoaded', () => {
+      const resultCard = document.querySelector('.result-card');
+      if (resultCard) {
+        resultCard.addEventListener('mousemove', (e) => {
+          const card = e.currentTarget;
+          const rect = card.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          
+          const centerX = rect.width / 2;
+          const centerY = rect.height / 2;
+          
+          const rotateX = ((y - centerY) / 100) * 0.2;
+          const rotateY = (-(x - centerX) / 100) * 0.2;
+          
+          card.style.transform = `perspective(2000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+        });
+
+        resultCard.addEventListener('mouseleave', () => {
+          resultCard.style.transform = 'perspective(2000px) rotateX(0) rotateY(0)';
+          resultCard.style.transition = 'transform 0.5s ease';
+        });
+      }
+    });
+
+    function saveAndReload() {
+      const score = answers.reduce((a,b)=>a+b,0);
+      const history = JSON.parse(localStorage.getItem('sleepHistory') || '[]');
+      history.push({ date: new Date().toLocaleDateString(), score });
+      localStorage.setItem('sleepHistory', JSON.stringify(history));
+      location.reload();
+    }
+
+    function renderHistory() {
+      const history = JSON.parse(localStorage.getItem('sleepHistory') || '[]');
+      const ctx = document.getElementById('historyChart').getContext('2d');
+
+      if (history.length === 0) {
+        const container = document.querySelector('.history-container');
+        container.innerHTML = `
+          <h2 class="history-header">수면 점수 히스토리</h2>
+          <div class="no-data-message">
+            아직 기록된 수면 데이터가 없습니다.<br>
+            첫 번째 수면 분석을 시작해보세요!
+          </div>
+          <button class="btn" onclick="navigate('quiz')">수면 분석 시작하기</button>
+        `;
+      } else {
+        const container = document.querySelector('.history-container');
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(148, 172, 244, 0.3)');
+        gradient.addColorStop(1, 'rgba(148, 172, 244, 0.05)');
+
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: history.map(h => h.date),
+            datasets: [{
+              label: '수면 점수',
+              data: history.map(h => {
+                const score = h.score;
+                return Math.round((50 - score + 10) / 50 * 100);
+              }),
+              backgroundColor: gradient,
+              borderColor: 'rgba(148, 172, 244, 1)',
+              borderWidth: 3,
+              pointBackgroundColor: '#ffffff',
+              pointBorderColor: 'rgba(148, 172, 244, 1)',
+              pointBorderWidth: 2,
+              pointRadius: 6,
+              pointHoverRadius: 9,
+              pointHoverBackgroundColor: '#ffffff',
+              pointHoverBorderColor: 'rgba(148, 172, 244, 1)',
+              pointHoverBorderWidth: 3,
+              tension: 0.4,
+              fill: true
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            layout: {
+              padding: {
+                top: 30,
+                right: 20,
+                bottom: 20,
+                left: 20
+              }
+            },
+            plugins: {
+              legend: { 
+                display: false 
+              },
+              tooltip: {
+                backgroundColor: 'rgba(20, 24, 44, 0.95)',
+                titleColor: '#fff',
+                bodyColor: '#fff',
+                bodyFont: {
+                  size: 15,
+                  weight: '600'
+                },
+                titleFont: {
+                  size: 13,
+                  weight: '500'
+                },
+                padding: 15,
+                cornerRadius: 12,
+                displayColors: false,
+                callbacks: {
+                  title: (context) => {
+                    return `${context[0].label}`;
+                  },
+                  label: (context) => {
+                    return `수면 점수: ${context.raw}점`;
+                  }
+                }
+              }
+            },
+            scales: {
+              x: {
+                display: false,
+                grid: {
+                  display: false
+                }
+              },
+              y: {
+                display: true,
+                beginAtZero: true,
+                max: 120,
+                grid: {
+                  display: true,
+                  color: 'rgba(255, 255, 255, 0.08)',
+                  drawBorder: false
+                },
+                ticks: {
+                  color: 'rgba(255, 255, 255, 0.9)',
+                  font: {
+                    size: 13,
+                    weight: '500'
+                  },
+                  stepSize: 20,
+                  padding: 10,
+                  callback: function(value) {
+                    return value <= 100 ? `${value}점` : '';
+                  }
+                }
+              }
+            },
+            interaction: {
+              intersect: false,
+              mode: 'index'
+            },
+            animation: {
+              duration: 1500,
+              easing: 'easeInOutQuart'
+            }
+          }
+        });
+
+        const actionsHtml = `
+          <div class="history-actions">
+            <button class="history-btn" onclick="navigate('quiz')">새로운 분석</button>
+            <button class="history-btn danger" onclick="clearHistory()">기록 초기화</button>
+          </div>
+        `;
+        container.insertAdjacentHTML('beforeend', actionsHtml);
+      }
+    }
+
+    function clearHistory() {
+      if (confirm('모든 수면 기록이 삭제됩니다. 계속하시겠습니까?')) {
+        localStorage.removeItem('sleepHistory');
+        renderHistory();
+      }
+    }
+
+    function initStarsCanvas() {
+      const canvas = document.getElementById('stars-bg');
+      const ctx = canvas.getContext('2d');
+      const stars = [];
+      const numStars = 120;
+      let dpr = window.devicePixelRatio || 1;
+
+      function resizeCanvas() {
+        const width = canvas.offsetWidth;
+        const height = canvas.offsetHeight;
+
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+        canvas.style.width = `${width}px`;
+        canvas.style.height = `${height}px`;
+
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.scale(dpr, dpr);
+
+        stars.length = 0;
+        for (let i = 0; i < numStars; i++) {
+          stars.push({
+            x: Math.random() * width,
+            y: Math.random() * height,
+            r: Math.random() * 1.5 + 0.5,
+            a: Math.random() * 0.5 + 0.5,
+            dx: (Math.random() - 0.5) * 0.1,
+            dy: (Math.random() - 0.5) * 0.1
+          });
+        }
+      }
+
+      function animateStars() {
+        const width = canvas.offsetWidth;
+        const height = canvas.offsetHeight;
+        ctx.clearRect(0, 0, width, height);
+
+        for (let s of stars) {
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255, 255, 255, ${s.a})`;
+          ctx.shadowColor = 'white';
+          ctx.shadowBlur = 6;
+          ctx.fill();
+
+          s.x += s.dx;
+          s.y += s.dy;
+
+          if (s.x < 0 || s.x > width) s.dx *= -1;
+          if (s.y < 0 || s.y > height) s.dy *= -1;
+
+          s.a += (Math.random() - 0.5) * 0.01;
+          s.a = Math.max(0.3, Math.min(0.9, s.a));
+        }
+
+        requestAnimationFrame(animateStars);
+      }
+
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
+      animateStars();
+    }
+
+    function shareResult() {
+      const score = document.getElementById('sleep-score').textContent;
+      const type = document.getElementById('sleep-type').textContent;
+      const shareText = `[SOMNIA 수면 분석 결과]\n수면 점수: ${score}점\n수면 유형: ${type}`;
+      
+      if (navigator.share) {
+        navigator.share({
+          title: 'SOMNIA 수면 분석 결과',
+          text: shareText,
+          url: window.location.href
+        }).catch(console.error);
+      } else {
+        navigator.clipboard.writeText(shareText)
+          .then(() => alert('결과가 클립보드에 복사되었습니다!'))
+          .catch(console.error);
+      }
+    }
+  </script>
+</body>
+</html>
